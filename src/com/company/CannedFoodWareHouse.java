@@ -1,0 +1,271 @@
+package com.company;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.Scanner;
+
+public class CannedFoodWareHouse {
+
+    private Bin[] bins;
+
+    public CannedFoodWareHouse() {
+        this.bins = new Bin[3];
+        bins[0] = new Bin("A1", "Beans");
+        bins[1] = new Bin("A2", "Sardine");
+        bins[2] = new Bin("A3", "Soup");
+        loadInitialDataFromFile();
+    }
+
+    public void loadInitialDataFromFile() {
+        System.out.println("Loading data from file");
+
+        FileReader fileReader = getFileReader();
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+        try {
+            String line = bufferedReader.readLine();
+            while (line != null) {
+                CannedFood cannedFood = getCannedFood(line);
+
+                addCannedFoodToSuitableBin(cannedFood);
+                line = bufferedReader.readLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error in reading file");
+        }
+    }
+
+    private boolean addCannedFoodToSuitableBin(CannedFood cannedFood) {
+        for (Bin bin : bins) {
+            if (bin.getDescription().equals(cannedFood.getDescription())) {
+                return bin.addCannedFood(cannedFood);
+            }
+        }
+        return false;
+    }
+
+    private CannedFood getCannedFood(String line) {
+        String cannonFoodDetails[] = line.split(",");
+
+        String id = cannonFoodDetails[0].trim();
+        String description = cannonFoodDetails[1].trim();
+        int year = Integer.parseInt(cannonFoodDetails[2].trim());
+        int month = Integer.parseInt(cannonFoodDetails[3].trim());
+        int day = Integer.parseInt(cannonFoodDetails[4].trim());
+
+        return new CannedFood(id, description, year, month, day);
+    }
+
+    private FileReader getFileReader() {
+        FileReader fileReader = null;
+        try {
+            fileReader = new FileReader(".//src//food.txt");
+        } catch (FileNotFoundException e) {
+            System.out.println("File is not present");
+        }
+        return fileReader;
+    }
+
+
+    public void insertNewCannedFood() {
+        String description = readDescriptionType();
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Please Enter id        :       ");
+        String id = scanner.next();
+
+        while (!isUniqueId(id.trim())){
+            System.out.println("Canned Food with id " + id + " already exists ! Please enter new unique Id");
+            System.out.println("Please Enter id        :       ");
+            id = scanner.next();
+        }
+
+        System.out.println("Please enter Expiry date : ");
+
+        System.out.println("year :");
+        int year = scanner.nextInt();
+
+        while(!isValidYear(year)){
+            System.out.println("Please enter valid year");
+            System.out.println("year :");
+            year = scanner.nextInt();
+        }
+
+        System.out.println("month :");
+        int month = scanner.nextByte();
+
+        while(!isValidMonth(month)){
+            System.out.println("Please enter valid month");
+            System.out.println("month :");
+            month = scanner.nextInt();
+        }
+
+        System.out.println("day");
+        int day = scanner.nextByte();
+
+        while(!isValidDay(day)){
+            System.out.println("Please enter valid day");
+            System.out.println("day :");
+            day = scanner.nextInt();
+        }
+
+        CannedFood newCannedFood = new CannedFood(id, description, year, month, day);
+        if (addCannedFoodToSuitableBin(newCannedFood)) ;
+            System.out.println("Successfully Added Canned food");
+    }
+
+    private boolean isUniqueId(String id) {
+        for (Bin bin : bins) {
+            CannedFood[] stock = bin.getStock();
+            for (CannedFood cannedFood : stock) {
+                if (cannedFood != null && cannedFood.getId().equals(id))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public void listCannedFoodInfo() {
+        String description = readDescriptionType();
+        for (Bin bin : bins) {
+            if (bin.getDescription().equals(description)) {
+                for(CannedFood food : bin.getStock())
+                    System.out.println(food);
+            }
+        }
+    }
+
+    private String readDescriptionType() {
+        System.out.println("Select Description type     :   ");
+        System.out.println("Enter 1 for Beans");
+        System.out.println("Enter 2 for Sardine");
+        System.out.println("Enter 3 for Soup");
+
+        Scanner scanner = new Scanner(System.in);
+        int option = scanner.nextInt();
+
+        while(!(option >= 1 && option <=3)){
+            System.out.println("Please enter valid option");
+            option = scanner.nextByte();
+        }
+
+        String description = "";
+
+        if (option == 1)
+            description = "Beans";
+        else if (option == 2)
+            description = "Sardine";
+        else if (option == 3)
+            description = "Soup";
+        return description;
+    }
+
+    public void removeCannedFood() {
+        String description = readDescriptionType();
+        for (Bin bin : bins) {
+            if (bin.getDescription().equals(description)) {
+                CannedFood cannedFood = bin.getCannedFood();
+                System.out.println(cannedFood);
+            }
+        }
+    }
+
+    public void removeExpiredCannedFood() {
+        for (Bin bin : bins) {
+            for (CannedFood food : bin.getStock()) {
+                if (food!=null && food.isExpired())
+                    bin.removeCannedFood(food);
+            }
+        }
+    }
+
+    public void exitAndSave(CannedFoodWareHouse cannedFoodWareHouse) {
+        Path path = Paths.get(".//src//output.txt");
+        writeToFile(cannedFoodWareHouse,path);
+        System.exit(0);
+    }
+
+    private void writeToFile(CannedFoodWareHouse cannedFoodWareHouse,Path path) {
+        try {
+            Files.write(path,"".getBytes());
+            for(Bin bin : cannedFoodWareHouse.bins){
+                for(CannedFood food : bin.getStock()){
+                    if(food != null){
+                        String content = food.toString() + "\n";
+                        Files.write(path,content.getBytes(), StandardOpenOption.APPEND);
+                    }
+                }
+            }
+        } catch (IOException e) {
+           System.out.println("Error in writing to the file "+path);
+        }
+    }
+
+    public static void main(String[] args) {
+        CannedFoodWareHouse cannedFoodWareHouse = new CannedFoodWareHouse();
+        System.out.println("Initial Ware House Data Loaded from the File : ");
+        cannedFoodWareHouse.printCannedWareHouseToConsole(cannedFoodWareHouse);
+
+        System.out.println("Please choose the menu to get started !");
+        System.out.println("INSERT,LIST,REMOVE,REMOVE EXPIRED OR EXIT AND SAVE");
+
+
+        Scanner scanner = new Scanner(System.in);
+        String option = scanner.nextLine();
+
+        while(!option.trim().equalsIgnoreCase("EXIT AND SAVE")){
+            switch (option.trim().toUpperCase()) {
+                case "INSERT":
+                    cannedFoodWareHouse.insertNewCannedFood();
+                    break;
+                case "LIST":
+                    cannedFoodWareHouse.listCannedFoodInfo();
+                    break;
+                case "REMOVE":
+                    cannedFoodWareHouse.removeCannedFood();
+                    break;
+                case "REMOVE EXPIRED":
+                    cannedFoodWareHouse.removeExpiredCannedFood();
+                    break;
+                default:
+                    System.out.println("Invalid option");
+            }
+            System.out.println("SELECT YOUR OPTION AGAIN");
+            System.out.println("INSERT,LIST,REMOVE,REMOVE EXPIRED OR EXIT AND SAVE");
+            option = scanner.nextLine();
+        }
+        cannedFoodWareHouse.exitAndSave(cannedFoodWareHouse);
+    }
+
+    @Override
+    public String toString() {
+        return "CannedFoodWareHouse{" +
+                "bins=" + Arrays.toString(bins) +
+                '}';
+    }
+
+    private boolean isValidYear(int year){
+        return year >= 2010 && year <= 2022;
+    }
+
+    private boolean isValidMonth(int month){
+        return (month >=1 && month <= 12);
+    }
+
+    private boolean isValidDay(int day){
+        return day >=1 && day <= 30;
+    }
+
+    private void printCannedWareHouseToConsole(CannedFoodWareHouse cannedFoodWareHouse){
+        for(Bin bin : cannedFoodWareHouse.bins){
+            for(CannedFood food : bin.getStock()){
+                if(food != null)
+                    System.out.println(food);
+            }
+        }
+    }
+}
