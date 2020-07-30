@@ -11,7 +11,7 @@ public class Bin {
     private String description;
     private CannedFood[] stock;
 
-    private static final int size = 10;
+    public static final int size = 10;
     private int stockIndex = -1;
 
     public Bin(String location, String description) {
@@ -27,7 +27,8 @@ public class Bin {
         }
 
         stock[++stockIndex] = cannedFood;
-        System.out.println("Stock size in " + cannedFood.getDescription() + " Bin now : " + (stockIndex + 1));
+        System.out.println("Successfully added the food "+cannedFood+"");
+        System.out.println("Stock occupied size in " + cannedFood.getDescription() + " Bin now : " + (stockIndex + 1));
         return true;
     }
 
@@ -47,6 +48,7 @@ public class Bin {
         CannedFood food = stock[stockIndex];
         stock[stockIndex] = null;
         stockIndex--;
+        System.out.println("Successfully removed nearest expiry canned food "+food);
         System.out.println("Stock size in bin now : " + (stockIndex + 1));
 
         return food;
@@ -57,6 +59,7 @@ public class Bin {
         swap(index,stockIndex);
         stock[stockIndex] = null;
         stockIndex--;
+        System.out.println("Removed the expired canned food "+cannedFood);
     }
 
     private void swap(int index, int stockIndex) {
