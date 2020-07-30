@@ -21,7 +21,7 @@ public class CannedFoodWareHouse {
     }
 
     public void loadInitialDataFromFile() {
-        System.out.println("Loading data from file");
+        System.out.println("Loading data from file \n");
 
         FileReader fileReader = getFileReader();
         BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -35,7 +35,7 @@ public class CannedFoodWareHouse {
                 line = bufferedReader.readLine();
             }
         } catch (IOException e) {
-            System.out.println("Error in reading file");
+            System.out.println("Error in reading file \n");
         }
     }
 
@@ -65,7 +65,7 @@ public class CannedFoodWareHouse {
         try {
             fileReader = new FileReader(".//src//food.txt");
         } catch (FileNotFoundException e) {
-            System.out.println("File is not present");
+            System.out.println("File is not present\n");
         }
         return fileReader;
     }
@@ -114,8 +114,8 @@ public class CannedFoodWareHouse {
         }
 
         CannedFood newCannedFood = new CannedFood(id, description, year, month, day);
-        if (addCannedFoodToSuitableBin(newCannedFood)) ;
-            System.out.println("Successfully Added Canned food");
+        addCannedFoodToSuitableBin(newCannedFood) ;
+            
     }
 
     private boolean isUniqueId(String id) {
@@ -133,8 +133,22 @@ public class CannedFoodWareHouse {
         String description = readDescriptionType();
         for (Bin bin : bins) {
             if (bin.getDescription().equals(description)) {
-                for(CannedFood food : bin.getStock())
-                    System.out.println(food);
+            	System.out.println("Bin Type is : "+bin.getDescription());
+            	int occupied = 0;
+            	int emptySize = 0;
+                for(CannedFood food : bin.getStock()) {
+                	if(food != null) {
+                		System.out.println(food);
+                			occupied++;
+                	}
+                	else {
+                		System.out.println("Empty");
+                			emptySize++;
+                	}
+                }
+                System.out.println("Stack Occupied size is "+occupied);
+                System.out.println("Stack Empty size is "+emptySize);
+                    
             }
         }
     }
@@ -168,8 +182,7 @@ public class CannedFoodWareHouse {
         String description = readDescriptionType();
         for (Bin bin : bins) {
             if (bin.getDescription().equals(description)) {
-                CannedFood cannedFood = bin.getCannedFood();
-                System.out.println(cannedFood);
+             bin.getCannedFood();    
             }
         }
     }
@@ -177,8 +190,9 @@ public class CannedFoodWareHouse {
     public void removeExpiredCannedFood() {
         for (Bin bin : bins) {
             for (CannedFood food : bin.getStock()) {
-                if (food!=null && food.isExpired())
+                if (food!=null && food.isExpired()) {
                     bin.removeCannedFood(food);
+                }
             }
         }
     }
@@ -207,10 +221,10 @@ public class CannedFoodWareHouse {
 
     public static void main(String[] args) {
         CannedFoodWareHouse cannedFoodWareHouse = new CannedFoodWareHouse();
-        System.out.println("Initial Ware House Data Loaded from the File : ");
+        System.out.println("Initial Ware House Data Loaded from the File : \n");
         cannedFoodWareHouse.printCannedWareHouseToConsole(cannedFoodWareHouse);
 
-        System.out.println("Please choose the menu to get started !");
+        System.out.println("Please choose the menu to get started !\n");
         System.out.println("INSERT,LIST,REMOVE,REMOVE EXPIRED OR EXIT AND SAVE");
 
 
@@ -265,6 +279,8 @@ public class CannedFoodWareHouse {
             for(CannedFood food : bin.getStock()){
                 if(food != null)
                     System.out.println(food);
+                else
+                	System.out.println("empty");
             }
         }
     }
